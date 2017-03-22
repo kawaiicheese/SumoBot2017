@@ -63,6 +63,11 @@ void fullSpeedAhead() {
   setRightForward(255);
 }
 
+void stopMoving() {
+  setLeftForward(0);
+  setRightForward(0);
+}
+
 void turnRight(int time) {
   setLeftForward(255);
   setRightBack(255);
