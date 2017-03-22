@@ -1,7 +1,7 @@
 //Pins
 int qrFL = 0, qrFR = 1, qrBL = 2, qrBR = 3; //Analog A0 to A3, frontleft, frontright, backleft, backright
-int sonarReceive = 3; //Digital 3
-int sonarSend = 9; //Digital 9
+int sonicReceive = 3; //Digital 3
+int sonicSend = 9; //Digital 9
 int motorLeftOn = 2, motorRightOn = 4; //Digital 2 and 4
 int motorLeftForward = 10, motorLeftBack = 11; //PWM
 int motorRightForward = 5, motorRightBack = 6; //PWM
@@ -15,11 +15,48 @@ void setup() {
   pinMode(motorRightOn, OUTPUT);
   digitalWrite(motorLeftOn, HIGH);
   digitalWrite(motorRightOn, HIGH);
+
+  //Enable ultrasonic sensor
+  pinMode(sonicSend, OUTPUT);
+  pinMode(sonicReceive, INPUT);
+  
+  //QR sensors are analog and don't need a mode set
 }
 
 void loop() {
-  qrPrintCOMDebugSynchronous(5, 500);
+  sonicPrintCOMDebugSynchronous(5, 100);
 }
+
+
+
+
+//Sonic sensor functions:
+long pollSonic() {
+  //Send a pulse through the send:
+  digitalWrite(sonicSend, LOW);
+  delayMicroseconds(100);
+  digitalWrite(sonicSend, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(sonicSend, LOW);
+
+  //Receive a pulse:
+  long duration = pulseIn(sonicReceive, HIGH);
+  long distanceInCm = duration / 58;
+
+  return distanceInCm;
+}
+
+void sonicPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Takes full ocntrol of CPU. Synchronous!!!!
+  Serial.begin(9600);
+  for(int i = 0; i < numPrints; i++) {
+    Serial.print(pollSonic());
+    Serial.println("cm");
+    delay(delayTime);
+  }
+  Serial.end();
+}
+
+
 
 
 //QR sensor functions:
@@ -45,6 +82,8 @@ void qrPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Takes
   }
   Serial.end();
 }
+
+
 
 
 //Motor Functions:
