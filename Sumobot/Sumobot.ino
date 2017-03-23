@@ -1,17 +1,13 @@
 //Pins
-int qr0 = 0, qr1 = 1, qr2 = 2, qr3 = 3; //Analog A0 to A3
-int sonarReceive = 4; //Analog A4
-int sonarSend = 9; //PWM
+int qrFL = 0, qrFR = 1, qrBL = 2, qrBR = 3; //Analog A0 to A3, frontleft, frontright, backleft, backright
+int sonicReceive = 3; //Digital 3
+int sonicSend = 9; //Digital 9
 int motorLeftOn = 2, motorRightOn = 4; //Digital 2 and 4
 int motorLeftForward = 10, motorLeftBack = 11; //PWM
 int motorRightForward = 5, motorRightBack = 6; //PWM
 
-final int HI_QR = 50; //Value for White Line. Subject to change
-private static final int QR_TOLERANCE = 0.01; //Tolernance for QR_Sensor Subject to change
-
 //Global variables:
-int QR_Sensor = 1; //Subject to change
-int QR_VALUE;
+int bWBarrierValue = 500;
 
 void setup() {
   //Enable motors
@@ -20,24 +16,77 @@ void setup() {
   digitalWrite(motorLeftOn, HIGH);
   digitalWrite(motorRightOn, HIGH);
 
-  //Enable QR_Sensor
-  pinMode(Sensor1,INPUT);
-  Serial.begin(9600);
+  //Enable ultrasonic sensor
+  pinMode(sonicSend, OUTPUT);
+  pinMode(sonicReceive, INPUT);
+  
+  //QR sensors are analog and don't need a mode set
 }
 
 void loop() {
-  /* So far, move forward until reaching white line. However, IDK how to stop the bot. */
-  QR_VALUE = analogRead(QR_Sensor);
-  fullSpeedAhead();
-
-  if(QR_VALUE + QR_TOLERANCE > HI_QR){
-    //Stop The Car.
-    turnLEFT(turnTime); //change num to time needed for turning
-  }
-
-  delay(20);
+  sonicPrintCOMDebugSynchronous(5, 100);
 }
 
+
+
+
+//Sonic sensor functions:
+long pollSonic() {
+  //Send a pulse through the send:
+  digitalWrite(sonicSend, LOW);
+  delayMicroseconds(100);
+  digitalWrite(sonicSend, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(sonicSend, LOW);
+
+  //Receive a pulse:
+  long duration = pulseIn(sonicReceive, HIGH);
+  long distanceInCm = duration / 58;
+
+  return distanceInCm;
+}
+
+void sonicPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Takes full ocntrol of CPU. Synchronous!!!!
+  Serial.begin(9600);
+  for(int i = 0; i < numPrints; i++) {
+    Serial.print(pollSonic());
+    Serial.println("cm");
+    delay(delayTime);
+  }
+  Serial.end();
+}
+
+
+
+
+//QR sensor functions:
+boolean qrAtEdge(int qrNumber) {
+  if(analogRead(qrNumber) > bWBarrierValue) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void qrPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Takes full ocntrol of CPU. Synchronous!!!!
+  Serial.begin(9600);
+  for(int i = 0; i < numPrints; i++) {
+    Serial.print(analogRead(qrFL));
+    Serial.print(" ");
+    Serial.print(analogRead(qrFR));
+    Serial.print(" ");
+    Serial.print(analogRead(qrBL));
+    Serial.print(" ");
+    Serial.println(analogRead(qrBR));
+    delay(delayTime);
+  }
+  Serial.end();
+}
+
+
+
+
+//Motor Functions:
 void setLeftForward(int speed) {
   analogWrite(motorLeftBack, 0);
   analogWrite(motorLeftForward, speed);
@@ -83,4 +132,3 @@ void turnLeft(int time) {
   setLeftForward(0);
   setRightForward(0);
 }
-
