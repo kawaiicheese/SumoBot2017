@@ -2,7 +2,6 @@
 int qrFL = 0, qrFR = 1, qrBL = 2, qrBR = 3; //Analog A0 to A3, frontleft, frontright, backleft, backright
 int sonicReceive = 3; //Digital 3
 int sonicSend = 9; //Digital 9
-int motorLeftOn = 2, motorRightOn = 4; //Digital 2 and 4
 int motorLeftForward = 10, motorLeftBack = 11; //PWM
 int motorRightForward = 5, motorRightBack = 6; //PWM
 
@@ -11,12 +10,6 @@ int bWBarrierValue = 500;
 long enemyNear = 50; // value when enemy is near
 
 void setup() {
-  //Enable motors
-  pinMode(motorLeftOn, OUTPUT);
-  pinMode(motorRightOn, OUTPUT);
-  digitalWrite(motorLeftOn, HIGH);
-  digitalWrite(motorRightOn, HIGH);
-
   //Enable ultrasonic sensor
   pinMode(sonicSend, OUTPUT);
   pinMode(sonicReceive, INPUT);
