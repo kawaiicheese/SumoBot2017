@@ -40,11 +40,12 @@ void loop() {
          we need to test for TIME NEEDED
 */
 void FrontInCorner() {
-  startTime = millis();
+  long startTime = millis();
+  long TIMEFOR120DEG = 0;
   do {
     setLeftForward(255);
     setRightBack(255);
-  } while(pollSonic() < enemyNear || millis() - startTime <= TIMEFOR120DEG) //runs for time or until enemy near
+  } while(pollSonic() < enemyNear || millis() - startTime <= TIMEFOR120DEG); //runs for time or until enemy near
   stopMoving();
 }
 
