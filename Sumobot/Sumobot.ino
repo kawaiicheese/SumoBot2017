@@ -1,9 +1,9 @@
 //Pins
-int qrFL = 0, qrFR = 1, qrBL = 2, qrBR = 3; //Analog A0 to A3, frontleft, frontright, backleft, backright
+int qrFL = 2, qrFR = 3; //Analog A0 to A1, frontleft, frontright
 int sonicReceive = 3; //Digital 3
 int sonicSend = 9; //Digital 9
 int motorLeftForward = 10, motorLeftBack = 11; //PWM
-int motorRightForward = 5, motorRightBack = 6; //PWM
+int motorRightForward = 6, motorRightBack = 5; //PWM
 
 //Global variables:
 int bWBarrierValue = 500;
@@ -13,7 +13,7 @@ void setup() {
   //Enable ultrasonic sensor
   pinMode(sonicSend, OUTPUT);
   pinMode(sonicReceive, INPUT);
-  
+  delay(5000);
   //QR sensors are analog and don't need a mode set
 }
 
@@ -21,10 +21,21 @@ void loop() {
   Serial.begin(9600);
   //check if bot is on the edge
   fullSpeedAhead();
+  delay(1000);
+  stopMoving();
+  delay(500);
+
+  turnRight(750);
+
+  delay(5000);
+  /**
   while (qrAtEdge(qrFL) || qrAtEdge(qrFL)) {
     stopMoving();
     FrontInCorner();
   }
+  */
+  
+  delay(5000);
 }
 
 //Main Methods
@@ -34,7 +45,7 @@ void loop() {
 */
 void FrontInCorner() {
   long startTime = millis();
-  long TIMEFOR120DEG = 0;
+  long TIMEFOR120DEG = 395;
   do {
     setLeftForward(255);
     setRightBack(255);
@@ -90,18 +101,12 @@ void qrPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Takes
   for(int i = 0; i < numPrints; i++) {
     Serial.print(analogRead(qrFL));
     Serial.print(" ");
-    Serial.print(analogRead(qrFR));
-    Serial.print(" ");
-    Serial.print(analogRead(qrBL));
-    Serial.print(" ");
-    Serial.println(analogRead(qrBR));
+    Serial.println(analogRead(qrFR));
     delay(delayTime);
   }
   Serial.end();
   
 }
-
-
 
 
 //Motor Functions:
