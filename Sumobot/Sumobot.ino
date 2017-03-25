@@ -6,9 +6,9 @@ int motorLeftForward = 10, motorLeftBack = 11; //PWM
 int motorRightForward = 6, motorRightBack = 5; //PWM
 
 //Environment parameters:
-int bWBarrierValueRight = 1000, bWBarrierValueLeft = 1000;
-int enemyNear = 50; // value when enemy is near
-int timeFor120DegLeft = 750, timeFor120DegRight = 395;
+int bWBarrierValueRight = 400, bWBarrierValueLeft = 400;
+int enemyNear = 40; // value when enemy is near
+int timeFor120DegLeft = 2000, timeFor120DegRight = 1500;
 
 void setup() {
   //Enable ultrasonic sensor
@@ -17,21 +17,25 @@ void setup() {
   
   delay(5000);
 
-  turnLeftTime(230); //maybe, if you don't wanna charge head on.
-  /********************************************************fullSpeedAhead();***********************************/
+  //turnLeftTime(130); //maybe, if you don't wanna charge head on.
+  fullSpeedAhead();
 }
 
 void loop() {
-  qrPrintCOMDebugSynchronous(5, 100);
-  sonicPrintCOMDebugSynchronous(5, 100);
+  //qrPrintCOMDebugSynchronous(5, 100);
+  //sonicPrintCOMDebugSynchronous(5, 100);
   
-  /*****************************************************************************************while (qrAtEdge(qrFL)) {
+  while (qrAtEdge(qrFL)) {
+    //moveBack();
+    //delay(350);
     frontLeftAtBorder();
   }
   
   while (qrAtEdge(qrFR)) {
+    //moveBack();
+    //delay(350);
     frontRightAtBorder();
-  }**************************************************************************************************************/
+  }
 }
 
 //Main Methods
@@ -40,18 +44,25 @@ void loop() {
          we need to test for TIME NEEDED
 */
 void frontLeftAtBorder() {
-  long startTime = millis();;
-  do {
-    turnRight();
-  } while(pollSonic() > enemyNear || millis() - startTime <= timeFor120DegRight); //runs for time or until enemy near
+  //moveBack();
+  //delay(100);
+  long startTime = millis();
+  
+  while(pollSonic() > enemyNear && millis() - startTime <= timeFor120DegRight) { //runs for time or until enemy near
+    turnRight(140);
+  }
+  
   fullSpeedAhead();
 }
 
 void frontRightAtBorder() {
+  //moveBack();
+  //delay(100);
   long startTime = millis();
-  do {
-    turnLeft();
-  } while(pollSonic() > enemyNear || millis() - startTime <= timeFor120DegLeft); //runs for time or until enemy near
+  while(pollSonic() > enemyNear && millis() - startTime <= timeFor120DegLeft) { //runs for time or until enemy near
+    turnLeft(140);
+  }
+  
   fullSpeedAhead();
 }
 
@@ -90,7 +101,7 @@ void sonicPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Ta
 //QR sensor functions:
 boolean qrAtEdge(int qrNumber) {
   int bWBarrierValue = qrNumber == qrFR ? bWBarrierValueRight : bWBarrierValueLeft;
-  if(analogRead(qrNumber) > bWBarrierValue) {
+  if(analogRead(qrNumber) < bWBarrierValue) {
     return true;
   } else {
     return false;
@@ -139,29 +150,34 @@ void fullSpeedAhead() {
   setRightForward(255);
 }
 
+void moveBack() {
+  setLeftBack(255);
+  setRightBack(255);
+}
+
 void stopMoving() {
   setLeftForward(0);
   setRightForward(0);
 }
 
-void turnRight() {
-  setLeftForward(255);
-  setRightBack(255);
+void turnRight(int speed) {
+  setLeftForward(speed);
+  setRightBack(speed);
 }
 
-void turnLeft() {
-  setLeftBack(255);
-  setRightForward(255);
+void turnLeft(int speed) {
+  setLeftBack(speed);
+  setRightForward(speed);
 }
 
 void turnRightTime(int time) {
-  turnRight();
+  turnRight(255);
   delay(time);
   stopMoving();
 }
 
 void turnLeftTime(int time) {
-  turnLeft();
+  turnLeft(255);
   delay(time);
   stopMoving();
 }
