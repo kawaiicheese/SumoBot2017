@@ -7,40 +7,23 @@ int motorRightForward = 5, motorRightBack = 6; //PWM
 
 //Global variables:
 int bWBarrierValue = 500;
-long enemyNear = 50; // value when enemy is near
 
 void setup() {
   //Enable ultrasonic sensor
   pinMode(sonicSend, OUTPUT);
   pinMode(sonicReceive, INPUT);
+
+  fullSpeedAhead();
   
   //QR sensors are analog and don't need a mode set
 }
 
 void loop() {
-  Serial.begin(9600);
-  //check if bot is on the edge
-  fullSpeedAhead();
-  while (qrAtEdge(qrFL) || qrAtEdge(qrFL)) {
-    stopMoving();
-    FrontInCorner();
-  }
+  sonicPrintCOMDebugSynchronous(5, 100);
+  qrPrintCOMDebugSynchronous(5, 100);
 }
 
-//Main Methods
-/**
-  @brief will turn 120 degrees unless robot sees enemy.
-         we need to test for TIME NEEDED
-*/
-void FrontInCorner() {
-  long startTime = millis();
-  long TIMEFOR120DEG = 0;
-  do {
-    setLeftForward(255);
-    setRightBack(255);
-  } while(pollSonic() < enemyNear || millis() - startTime <= TIMEFOR120DEG); //runs for time or until enemy near
-  stopMoving();
-}
+
 
 
 //Sonic sensor functions:
@@ -66,14 +49,9 @@ void sonicPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Ta
     Serial.println("cm");
     delay(delayTime);
   }
-  Serial.end();
 }
 
-void EnemyInSonicRange(long enemyDist) {
-  if(enemyDist < enemyNear) {
-    fullSpeedAhead();
-  }
-}
+
 
 
 //QR sensor functions:
@@ -97,8 +75,6 @@ void qrPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Takes
     Serial.println(analogRead(qrBR));
     delay(delayTime);
   }
-  Serial.end();
-  
 }
 
 
