@@ -1,41 +1,37 @@
 //Pins
-int qrFL = 2, qrFR = 3; //Analog A0 to A1, frontleft, frontright
+int qrFL = 2, qrFR = 3;
 int sonicReceive = 3; //Digital 3
 int sonicSend = 9; //Digital 9
 int motorLeftForward = 10, motorLeftBack = 11; //PWM
 int motorRightForward = 6, motorRightBack = 5; //PWM
 
-//Global variables:
-int bWBarrierValue = 500;
-long enemyNear = 50; // value when enemy is near
+//Environment parameters:
+int bWBarrierValueRight = 1000, bWBarrierValueLeft = 1000;
+int enemyNear = 50; // value when enemy is near
+int timeFor120DegLeft = 750, timeFor120DegRight = 395;
 
 void setup() {
   //Enable ultrasonic sensor
   pinMode(sonicSend, OUTPUT);
   pinMode(sonicReceive, INPUT);
+  
   delay(5000);
-  //QR sensors are analog and don't need a mode set
+
+  turnLeftTime(230); //maybe, if you don't wanna charge head on.
+  /********************************************************fullSpeedAhead();***********************************/
 }
 
 void loop() {
-  Serial.begin(9600);
-  //check if bot is on the edge
-  fullSpeedAhead();
-  delay(1000);
-  stopMoving();
-  delay(500);
-
-  turnRight(750);
-
-  delay(5000);
-  /**
-  while (qrAtEdge(qrFL) || qrAtEdge(qrFL)) {
-    stopMoving();
-    FrontInCorner();
-  }
-  */
+  qrPrintCOMDebugSynchronous(5, 100);
+  sonicPrintCOMDebugSynchronous(5, 100);
   
-  delay(5000);
+  /*****************************************************************************************while (qrAtEdge(qrFL)) {
+    frontLeftAtBorder();
+  }
+  
+  while (qrAtEdge(qrFR)) {
+    frontRightAtBorder();
+  }**************************************************************************************************************/
 }
 
 //Main Methods
@@ -43,22 +39,31 @@ void loop() {
   @brief will turn 120 degrees unless robot sees enemy.
          we need to test for TIME NEEDED
 */
-void FrontInCorner() {
-  long startTime = millis();
-  long TIMEFOR120DEG = 395;
+void frontLeftAtBorder() {
+  long startTime = millis();;
   do {
-    setLeftForward(255);
-    setRightBack(255);
-  } while(pollSonic() < enemyNear || millis() - startTime <= TIMEFOR120DEG); //runs for time or until enemy near
-  stopMoving();
+    turnRight();
+  } while(pollSonic() > enemyNear || millis() - startTime <= timeFor120DegRight); //runs for time or until enemy near
+  fullSpeedAhead();
 }
+
+void frontRightAtBorder() {
+  long startTime = millis();
+  do {
+    turnLeft();
+  } while(pollSonic() > enemyNear || millis() - startTime <= timeFor120DegLeft); //runs for time or until enemy near
+  fullSpeedAhead();
+}
+
+
+
 
 
 //Sonic sensor functions:
 long pollSonic() {
   //Send a pulse through the send:
   digitalWrite(sonicSend, LOW);
-  delayMicroseconds(100);
+  delayMicroseconds(20);
   digitalWrite(sonicSend, HIGH);
   delayMicroseconds(10);
   digitalWrite(sonicSend, LOW);
@@ -80,15 +85,11 @@ void sonicPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Ta
   Serial.end();
 }
 
-void EnemyInSonicRange(long enemyDist) {
-  if(enemyDist < enemyNear) {
-    fullSpeedAhead();
-  }
-}
 
 
 //QR sensor functions:
 boolean qrAtEdge(int qrNumber) {
+  int bWBarrierValue = qrNumber == qrFR ? bWBarrierValueRight : bWBarrierValueLeft;
   if(analogRead(qrNumber) > bWBarrierValue) {
     return true;
   } else {
@@ -101,12 +102,15 @@ void qrPrintCOMDebugSynchronous(int numPrints, int delayTime) { //WARNING: Takes
   for(int i = 0; i < numPrints; i++) {
     Serial.print(analogRead(qrFL));
     Serial.print(" ");
-    Serial.println(analogRead(qrFR));
+    Serial.print(analogRead(qrFR));
+    Serial.print(" ");
     delay(delayTime);
   }
   Serial.end();
   
 }
+
+
 
 
 //Motor Functions:
@@ -140,18 +144,33 @@ void stopMoving() {
   setRightForward(0);
 }
 
-void turnRight(int time) {
+void turnRight() {
   setLeftForward(255);
   setRightBack(255);
-  delay(time);
-  setLeftForward(0);
-  setRightForward(0);
 }
 
-void turnLeft(int time) {
+void turnLeft() {
   setLeftBack(255);
   setRightForward(255);
-  delay(time);
-  setLeftForward(0);
-  setRightForward(0);
 }
+
+void turnRightTime(int time) {
+  turnRight();
+  delay(time);
+  stopMoving();
+}
+
+void turnLeftTime(int time) {
+  turnLeft();
+  delay(time);
+  stopMoving();
+}
+
+/*void turnRightDegrees(int degrees) {
+  turnRightTime(millisPer10Degrees*degrees/10);
+}
+
+void turnLeftDegrees(int degrees) {
+  turnLeftTime(millisPer10Second*degrees/10);
+}
+*/
